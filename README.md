@@ -32,3 +32,7 @@
   php bin/console make:entity
   php bin/console make:user
   php bin/console make:controller)
+
+# composer require symfonycasts/verify-email-bundle
+
+- use to verify emails
