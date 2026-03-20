@@ -2,5 +2,8 @@
 
 <img src="/images/{{ product.image }}" width="200">
 <p>Prix : {{ product.price }} €</p>
+<a href="{{ path('cart_add', {'id': product.id}) }}">
+    Ajouter au panier
+</a>
 
 <a href="/products">Retour</a>
