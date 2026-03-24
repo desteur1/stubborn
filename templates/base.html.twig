@@ -10,8 +10,52 @@
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
+        
     </head>
+   
     <body>
-        {% block body %}{% endblock %}
+        
+        <nav>
+            <a href="{{ path('home') }}">
+            <img src="/images/logo.png" width="75">
+            </a>
+            <a href="{{ path('home') }}">Accueil</a>
+            
+
+            {% if app.user %}
+                
+                
+                <a href="{{ path('products') }}">Boutique</a>
+
+                {% set sessionCart = app.session.get('cart', []) %}
+                {% set count = sessionCart|length %}
+                <span>Bonjour {{ app.user.name }}</span>
+                <a href="{{ path('cart') }}">Panier ({{ count }})</a>
+                <a href="{{ path('app_logout') }}">Déconnexion</a>
+            {% else %}
+                <a href="{{ path('app_login') }}">Connexion</a>
+                <a href="{{ path('app_register') }}">Inscription</a>
+            {% endif %}
+        </nav>
+        
+         {% block body %}{% endblock %}
+
+        <footer style="margin-top: 50px; padding: 20px; background: #eee; text-align: start;">
+    
+                <p><strong>Stubborn</strong></p>
+
+                <p>Don't compromise on your look</p>
+
+                <p>Email : contact@stubborn.com</p>
+
+                <p>Adresse : Paris, France</p>
+
+                <p>© {{ "now"|date("Y") }} Stubborn - Tous droits réservés</p>
+
+        </footer>
+        
+        
     </body>
+
+    
 </html>

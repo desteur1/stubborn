@@ -1,9 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} {{product.name}}{% endblock %}
+
+{% block body %}
+
 <h1>{{ product.name }}</h1>
 
 <img src="/images/{{ product.image }}" width="200">
 <p>Prix : {{ product.price }} €</p>
-<a href="{{ path('cart_add', {'id': product.id}) }}">
-    Ajouter au panier
-</a>
+<form action="{{ path('cart_add', {id: product.id}) }}" method="post">
 
-<a href="/products">Retour</a>
+    <label>Taille :</label>
+    <select name="size">
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+    </select>
+
+    <button type="submit">Ajouter au panier</button>
+</form>
+
+<a href="{{path('products')}}">Retour</a>
+{% endblock %}
