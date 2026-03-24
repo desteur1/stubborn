@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Bienvenue chez Stubborn{% endblock %}
 
 {% block body %}
 <style>
@@ -18,7 +18,13 @@
     <div>
         <img src="/images/{{ product.image }}" width="150">
         <p>{{ product.name }} - {{ product.price }} €</p>
-        <a href="/product/{{ product.id }}">Voir</a>
+        
+        {# Bouton “Voir” seulement si l’utilisateur est connecté #}
+        {% if app.user %}
+        <a href="{{ path ('product_show', {id: product.id}) }}">Voir</a>
+        {% else %}
+            <span style="color:gray;">Connectez-vous pour voir les détails</span>
+        {% endif %}
     </div>
     {% else %}
     <p>Aucun produit mis en avant</p>
