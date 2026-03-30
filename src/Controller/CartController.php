@@ -10,6 +10,11 @@ use Symfony\Component\HttpFoundation\Request;
 // permet d'utiliser la session(pour le panier)
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+use Stripe\Stripe;
+
+
+
+
 // pour récupérer les produits de la base de données
 use App\Repository\SweatshirtRepository;
 
@@ -132,7 +137,34 @@ final class CartController extends AbstractController
 
 
     }
+
     
+
+    #[Route('/success', name: 'checkout_success')]
+    public function success(SessionInterface $session, SweatshirtRepository $repo, Request $request): Response
+{   
+   
+    $cart = $session->get('cart', []); // récupère le panier de la session, ou un tableau vide si il n'existe pas
+    $cartWithData = []; // tableau pour stocker les produits du panier avec leurs données
+    foreach ($cart as $id => $sizes) { // pour chaque produit dans le panier, on récupère son id et les tailles associées
+        $product = $repo->find($id); // récupère le produit correspondant à l'id
+        if (!$product) continue; // si le produit n'existe pas, on passe au suivant
+
+        foreach ($sizes as $size => $quantity) { // pour chaque taille du produit, on récupère la taille et la quantité
+            $cartWithData[] = [ // on ajoute le produit et sa quantité au tableau
+                'product' => $product,
+                'size' => $size,
+                'quantity' => $quantity
+            ];
+        }
+    }
+
+
+    $session->remove('cart');// on vide le panier après une commande réussie
+    return $this->render('payment/success.html.twig', [
+        'cartWithData' => $cartWithData
+    ]);
+}
 
 
 

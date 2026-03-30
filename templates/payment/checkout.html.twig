@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h2>Paiement sécurisé</h2>
+
+<form id="payment-form">
+    <div id="payment-element"></div>
+    <button id="submit" type="button">Payer</button>
+    <div id="payment-message" style="color:red;"></div>
+</form>
+
+<script src="https://js.stripe.com/v3/" data-turbo-track="reload"></script>
+<script>
+document.addEventListener("turbo:render", () => {
+    const form = document.getElementById('payment-form');
+    if(!form) return; //on est pas sur la page paiment
+
+    if (typeof Stripe === 'undefined') return;
+    const stripe = Stripe('{{ stripe_public_key }}');
+    let elements;
+    const submitButton = document.getElementById('submit');
+    submitButton.disabled = true;
+
+    // Création du PaymentIntent
+    fetch("/create-payment-intent", { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+            elements = stripe.elements({ clientSecret: data.clientSecret });
+            const paymentElement = elements.create('payment');
+            paymentElement.mount('#payment-element');
+            submitButton.disabled = false; // actif quand Stripe est prêt
+        });
+
+    
+    const message = document.getElementById('payment-message');
+
+    submitButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if(!elements) return;
+
+        const {error} = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // Après paiement réussi, redirection
+                return_url: '{{ url('checkout_success') }}',
+            },
+        });
+
+        if (error) {
+            message.textContent = error.message;
+        }
+    });
+});
+</script>
+{% endblock %}
