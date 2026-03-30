@@ -13,6 +13,27 @@
 </div>
 <h1>Liste des produits</h1>
 
+<h2>Filtrer par prix :</h2>
+
+<form method="get" action="{{ path('products') }}">
+    <select name="range" onchange="this.form.submit()">
+        <option value="">-- Tous les produits --</option>
+
+        <option value="1" {% if currentRange == '1' %}selected{% endif %}>
+            10€ - 29€
+        </option>
+
+        <option value="2" {% if currentRange == '2' %}selected{% endif %}>
+            29€ - 35€
+        </option>
+
+        <option value="3" {% if currentRange == '3' %}selected{% endif %}>
+            35€ - 50€
+        </option>
+    </select>
+</form>
+
+
 {# Boucle sur les produits passés depuis le contrôleur #}
 {% for product in products %}
    <p>
@@ -23,4 +44,5 @@
 {% else %}
     <p> Aucun produit trouvé </p>
 {% endfor %}
+
 {% endblock %}

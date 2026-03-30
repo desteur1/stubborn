@@ -40,4 +40,13 @@ class SweatshirtRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function findByPriceRange(float $min, float $max) // méthode personnalisée pour trouver les produits dans une fourchette de prix
+{
+    return $this->createQueryBuilder('s')
+        ->andWhere('s.price >= :min AND s.price < :max') // on utilise >= pour inclure le prix minimum et < pour exclure le prix maximum, afin d'éviter les chevauchements entre les plages de prix
+        ->setParameter('min', $min)// on définit les paramètres de la requête pour éviter les injections SQL
+        ->setParameter('max', $max)// on définit les paramètres de la requête pour éviter les injections SQL
+        ->getQuery()
+        ->getResult();
+}
 }

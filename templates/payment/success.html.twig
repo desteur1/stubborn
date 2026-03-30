@@ -1,0 +1,9 @@
+<h1>Paiement réussi ✅</h1>
+
+<ul>
+{% for item in cartWithData %}
+    <li>{{ item.product.name }} - {{ item.size }} x {{ item.quantity }}</li>
+{% endfor %}
+</ul>
+
+<a href="{{ path('products') }}">Retour boutique</a>

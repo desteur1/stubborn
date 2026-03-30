@@ -43,5 +43,8 @@
 {# Affichage du total #}
 <p>Total : {{ total }} €</p>
 <a href="/products">Continuer mes achats</a>
+<a href="{{ path('checkout') }}" class="btn btn-success">
+    finaliser le paiement
+</a>
 </div>
 {% endblock %}
