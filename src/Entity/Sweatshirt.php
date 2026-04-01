@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\SweatshirtRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: SweatshirtRepository::class)]
 class Sweatshirt
@@ -12,6 +14,9 @@ class Sweatshirt
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartItem::class)]
+    private Collection $cartItems;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -55,6 +60,16 @@ class Sweatshirt
         $this->name = $name;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->cartItems = new ArrayCollection();
+    }
+
+    public function getCartItems(): Collection
+    {
+        return $this->cartItems;
     }
 
     public function getPrice(): ?float

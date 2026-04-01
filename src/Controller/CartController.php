@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Cart;
+use App\Entity\CartItem;
+use App\Repository\CartRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 // permet d'utiliser la session(pour le panier)
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
 
 use Stripe\Stripe;
 
@@ -19,153 +25,202 @@ use Stripe\Stripe;
 use App\Repository\SweatshirtRepository;
 
 final class CartController extends AbstractController
-{    //route pour afficher le panier
+{    
+     private $em;
+    
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
+    private function getUserCart(): ?Cart
+    {
+        $user = $this->getUser();
+        if (!$user) return null; // si pas connecté
+
+        $cart = $this->em->getRepository(Cart::class)->findOneBy(['user' => $user]);
+
+        if (!$cart) {
+            $cart = new Cart();
+            $cart->setUser($user);
+            $cart->setCreatedAt(new \DateTimeImmutable());
+            $cart->setUpdatedAt(new \DateTimeImmutable());
+            $this->em->persist($cart);
+            $this->em->flush();
+        }
+
+        return $cart;
+    }
+    
+//route pour afficher le panier
     #[Route('/cart', name: 'cart')]
-    public function index(SessionInterface $session, SweatshirtRepository $repo): Response
-    {
-    
-         $cart = $session->get('cart', []); // récupère le panier de la session, ou un tableau vide si il n'existe pas
-            $cartWithData = []; // tableau pour stocker les produits du panier avec leurs données
-            
-            $total = 0; // variable pour stocker le total du panier
+public function index(): Response
+{
+    $cart = $this->getUserCart();
+    // Ajoute ça juste après pour vérifier le contenu du panier
+    //dd($cart->getCartItems()->toArray());
 
 
 
-            foreach ($cart as $id => $sizes) { // pour chaque produit dans le panier, on récupère son id et les tailles associées
-                $product = $repo->find($id); // récupère le produit correspondant à l'id
-                if (!$product) continue; // si le produit n'existe pas, on passe au suivant
+    $cartItems = $cart ? $cart->getCartItems()->toArray() : [];
 
-                foreach ($sizes as $size => $quantity) { // pour chaque taille du produit, on récupère la taille et la quantité
-
-                if ($product) { // si le produit existe
-                    $cartWithData[] = [ // on ajoute le produit et sa quantité au tableau
-                        'product' => $product,
-                        'size' => $size,
-                        'quantity' => $quantity
-                    ];
-                    $total += $product->getPrice() * $quantity; // on ajoute le prix du produit * la quantité au total
-                }
-            }
-        }
-        // dd($cartWithData);
-        //$session->clear();
-        return $this->render('cart/index.html.twig', [
-            'cart' => $cartWithData, // on passe le tableau des produits du panier à la vue
-            'total' => $total // on passe le total du panier à la vue
-        ]);
+    $total = 0;
+    foreach ($cartItems as $item) {
+        $total += $item->getProduct()->getPrice() * $item->getQuantity();
     }
 
-   
-    //route pour ajouter un produit au panier
-    #[Route('/cart/add/{id}', name: 'cart_add')]
-    public function add($id, Request $request, SessionInterface $session): Response
-    {   
-        $size = $request->request->get('size'); // récupère la taille sélectionnée par l'utilisateur
-
-        $cart = $session->get('cart', []); // récupère le panier de la session, ou un tableau vide si il n'existe pas
-        if (!isset($cart[$id])) { // si le produit n'est pas encore dans le panier
-            $cart[$id] = []; // on initialise un tableau pour stocker les tailles et les quantités
-        }
-
-        if (!empty($cart[$id][$size])) { // si la taille du produit est déjà dans le panier
-            $cart[$id][$size]++;// on augmente la quantité de 1 
-        } else {
-            $cart[$id][$size] = 1; // sinon on ajoute le produit au panier avec une quantité de 1
-        }
-
-        $session->set('cart', $cart); // on enregistre le panier dans la session
-     
-         return $this->redirectToRoute('cart'); // on redirige vers la page du panier
-    }
-
-
-    #[Route('/cart/increase/{id}/{size}', name: 'cart_increase')]
-    public function increase($id, $size, SessionInterface $session): Response
-    {
-        $cart = $session->get('cart', []); // récupère le panier de la session, ou un tableau vide si il n'existe pas
-
-        if (!empty($cart[$id][$size])) { // si la taille du produit est déjà dans le panier 
-            $cart[$id][$size]++; // on augmente la quantité de 1
-        }
-
-        $session->set('cart', $cart); // on enregistre le panier dans la session
-     
-         return $this->redirectToRoute('cart'); // on redirige vers la page du panier
-    }
-
-
-    #[Route('/cart/decrease/{id}/{size}', name: 'cart_decrease')]
-    public function decrease($id,$size, SessionInterface $session): Response
-    {
-        $cart = $session->get('cart', []); // récupère le panier de
-        if (!empty($cart[$id][$size])) { // si la taille du produit est déjà dans le panier
-            if ($cart[$id][$size] > 1) { // si la quantité est supérieure à 1
-                $cart[$id][$size]--; // on diminue la quantité de 1
-            } else {
-                unset($cart[$id][$size]); // sinon on supprime la taille du produit du panier
-            }
-            //n'ettoie si plus aucune taille du produit n'est dans le panier
-            if (empty($cart[$id])) { // si aucune taille du produit n'est dans le panier
-                unset($cart[$id]); // on supprime le produit du panier
-            }
-        }
-        $session->set('cart', $cart); // on enregistre le panier dans la session
-
-            return $this->redirectToRoute('cart'); // on redirige vers la page du panier
-    }
-
-            
-
-            
-
-    //route pour supprimer un produit du panier
-    #[Route('/cart/remove/{id}/{size}', name: 'cart_remove')]
-    public function remove($id,$size, SessionInterface $session): Response
-    {
-        $cart = $session->get('cart', []); // récupère le panier de
-        if (!empty($cart[$id][$size])) { // si la taille du produit est déjà dans le panier
-            unset($cart[$id][$size]); // on supprime la taille du produit du panier
-            
-            //n'ettoie si plus aucune taille du produit n'est dans le panier
-            if (empty($cart[$id])) { // si aucune taille du produit n'est dans le panier
-                unset($cart[$id]); // on supprime le produit du panier
-            }
-        }
-        $session->set('cart', $cart); // on enregistre le panier dans la session
-     
-         return $this->redirectToRoute('cart'); // on redirige vers la page du panier
-
-
-    }
-
-    
-
-    #[Route('/success', name: 'checkout_success')]
-    public function success(SessionInterface $session, SweatshirtRepository $repo, Request $request): Response
-{   
-   
-    $cart = $session->get('cart', []); // récupère le panier de la session, ou un tableau vide si il n'existe pas
-    $cartWithData = []; // tableau pour stocker les produits du panier avec leurs données
-    foreach ($cart as $id => $sizes) { // pour chaque produit dans le panier, on récupère son id et les tailles associées
-        $product = $repo->find($id); // récupère le produit correspondant à l'id
-        if (!$product) continue; // si le produit n'existe pas, on passe au suivant
-
-        foreach ($sizes as $size => $quantity) { // pour chaque taille du produit, on récupère la taille et la quantité
-            $cartWithData[] = [ // on ajoute le produit et sa quantité au tableau
-                'product' => $product,
-                'size' => $size,
-                'quantity' => $quantity
-            ];
-        }
-    }
-
-
-    $session->remove('cart');// on vide le panier après une commande réussie
-    return $this->render('payment/success.html.twig', [
-        'cartWithData' => $cartWithData
+    return $this->render('cart/index.html.twig', [
+        'cart' => $cartItems,
+        'total' => $total,
+        'paymentSuccess' =>  false // panier normal
     ]);
+}
+   
+   #[Route('/cart/add/{id}', name: 'cart_add')]
+public function add($id, Request $request, SweatshirtRepository $repo): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        $this->addFlash('error', 'Vous devez être connecté pour ajouter un produit.');
+        return $this->redirectToRoute('login');
+    }
+
+    $cart = $this->getUserCart(); // panier persistant
+    $product = $repo->find($id);
+    if (!$product) {
+        throw $this->createNotFoundException('Produit non trouvé');
+    }
+
+    $size = $request->request->get('size')?? $request->query->get('size');// Récupérer la taille depuis le formulaire ou la query string(post ou get)
+
+    if (!$size) {
+        $this->addFlash('error', 'Veuillez sélectionner une taille.');
+        return $this->redirectToRoute('products', ['id' => $id]);
+    }
+
+    // Vérifier si CartItem existe déjà pour ce produit et cette taille
+    $existingItem = $this->em->getRepository(CartItem::class)->findOneBy([
+        'cart' => $cart,
+        'product' => $product,
+        'size' => $size
+    ]);
+
+    if ($existingItem) {
+        $existingItem->setQuantity($existingItem->getQuantity() + 1);
+    } else {
+        $cartItem = new CartItem();
+        $cartItem->setCart($cart)
+                 ->setProduct($product)
+                 ->setSize($size)
+                 ->setQuantity(1);
+        $this->em->persist($cartItem);
+    }
+
+    $cart->setUpdatedAt(new \DateTimeImmutable());
+    $this->em->flush();
+
+    return $this->redirectToRoute('cart');
 }
 
 
+   #[Route('/cart/increase/{id}/{size}', name: 'cart_increase')]
+public function increase($id, $size, SweatshirtRepository $repo): Response
+{
+    $cart = $this->getUserCart(); // panier persistant
+    if (!$cart) return $this->redirectToRoute('login');// si pas connecté
+
+    $item = $this->em->getRepository(CartItem::class)->findOneBy([ // on cherche l'item correspondant au produit et à la taille dans le panier de l'utilisateur
+        'cart' => $cart,
+        'product' => $repo->find($id),
+        'size' => $size
+    ]);
+
+    if ($item) { // si l'item existe déjà, on augmente la quantité de 1
+        $item->setQuantity($item->getQuantity() + 1);
+        $cart->setUpdatedAt(new \DateTimeImmutable());
+        $this->em->flush();
+    }
+
+    return $this->redirectToRoute('cart');
+}
+
+   #[Route('/cart/decrease/{id}/{size}', name: 'cart_decrease')]
+public function decrease($id, $size, SweatshirtRepository $repo): Response
+{
+    $cart = $this->getUserCart();
+    if (!$cart) return $this->redirectToRoute('login');
+
+    $item = $this->em->getRepository(CartItem::class)->findOneBy([
+        'cart' => $cart,
+        'product' => $repo->find($id),
+        'size' => $size
+    ]);
+
+    if ($item) {
+        if ($item->getQuantity() > 1) {
+            $item->setQuantity($item->getQuantity() - 1);
+        } else {
+            $this->em->remove($item);
+        }
+        $cart->setUpdatedAt(new \DateTimeImmutable());
+        $this->em->flush();
+    }
+
+    return $this->redirectToRoute('cart');
+}
+
+            
+
+            
+#[Route('/cart/remove/{id}/{size}', name: 'cart_remove')]
+public function remove($id, $size, SweatshirtRepository $repo): Response
+{
+    $cart = $this->getUserCart();
+    if (!$cart) return $this->redirectToRoute('login');
+
+    $item = $this->em->getRepository(CartItem::class)->findOneBy([
+        'cart' => $cart,
+        'product' => $repo->find($id),
+        'size' => $size
+    ]);
+
+    if ($item) {
+        $this->em->remove($item);
+        $cart->setUpdatedAt(new \DateTimeImmutable());
+        $this->em->flush();
+    }
+
+    return $this->redirectToRoute('cart');
+}
+    
+
+    #[Route('/success', name: 'checkout_success')]
+public function success(): Response
+{
+    $cart = $this->getUserCart();
+    if (!$cart) return $this->redirectToRoute('login');
+
+    $cartItems = $cart->getCartItems()->toArray();
+    $total = 0;
+
+    foreach ($cartItems as $item) {
+        $total += $item->getProduct()->getPrice() * $item->getQuantity();
+    }
+
+    // Après la commande réussie, on supprime tous les items du panier
+    foreach ($cartItems as $item) {
+        $this->em->remove($item);
+    }
+
+    $cart->setUpdatedAt(new \DateTimeImmutable());
+    $this->em->flush();
+
+    return $this->render('payment/success.html.twig', [
+        'cart' => $cartItems,
+        'total' => $total,
+        'paymentSuccess' =>  true // panier après paiement réussi
+    ]);
+}
 
 }

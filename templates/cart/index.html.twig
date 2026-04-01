@@ -14,7 +14,7 @@
 
 
 {# Boucle sur les produits du panier #}
-{% for item in cart %}
+{% for item in cart.cartItems %}
 
 <div>
      <img src="/images/{{ item.product.image }}" width="150">

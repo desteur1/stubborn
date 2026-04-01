@@ -2,15 +2,14 @@
 
 namespace App\Controller;
 
-
+use App\Entity\Cart;
 // Import du repository pour accéder aux données en base
 use App\Repository\SweatshirtRepository;
 
-// ancienne syntaxe pour les routes
-// use Symfony\Component\Routing\Annotation\Route;
 
 // Permet de définir les routes avec #[Route]
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -50,14 +49,26 @@ class ProductController extends AbstractController
 
     // Route pour afficher un produit spécifique via son ID
     #[Route('/product/{id}', name: 'product_show')]
-    public function show(int $id, SweatshirtRepository $repo)
+    public function show(int $id, SweatshirtRepository $repo, EntityManagerInterface $em)
     {
         // Récupère un seul produit grâce à son ID
         $product = $repo->find($id);
 
+         // Récupérer le panier pour l'utilisateur connecté
+    $cartCount = 0;
+    $user = $this->getUser();
+    if ($user) {
+            $cart = $em->getRepository(Cart::class)->findOneBy(['user' => $user]);
+            if ($cart) {
+                $cartCount = count($cart->getCartItems());
+            }
+    }
+
+
         // Envoie le produit à la vue Twig
         return $this->render('product/show.html.twig', [
-            'product' => $product
+            'product' => $product,
+            'cartCount' => $cartCount
         ]);
     }
 }
