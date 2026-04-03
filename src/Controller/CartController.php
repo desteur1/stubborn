@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Cart;
 use App\Entity\CartItem;
-use App\Repository\CartRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 
-use Stripe\Stripe;
+
 
 
 
@@ -37,7 +37,11 @@ final class CartController extends AbstractController
     private function getUserCart(): ?Cart
     {
         $user = $this->getUser();
-        if (!$user) return null; // si pas connecté
+
+        if (!$user instanceof User) 
+            {
+                return null;
+            }; // si pas connecté
 
         $cart = $this->em->getRepository(Cart::class)->findOneBy(['user' => $user]);
 
@@ -81,7 +85,7 @@ public function index(): Response
 public function add($id, Request $request, SweatshirtRepository $repo): Response
 {
     $user = $this->getUser();
-    if (!$user) {
+    if (!$user instanceof User) {
         $this->addFlash('error', 'Vous devez être connecté pour ajouter un produit.');
         return $this->redirectToRoute('login');
     }

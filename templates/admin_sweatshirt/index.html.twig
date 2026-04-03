@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Back-office Sweatshirts{% endblock %}
+
+{% block body %}
+<h1>Gestion des Sweat-shirts</h1>
+
+<a href="{{ path('admin_sweat_new') }}" class="btn btn-primary">Ajouter un sweat-shirt</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>image</th>
+            <th>Nom</th>
+            <th>Prix</th>
+            <th>Stock XS</th>
+            <th>Stock S</th>
+            <th>Stock M</th>
+            <th>Stock L</th>
+            <th>Stock XL</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in sweatshirts %}
+            <tr>
+                <td>{{ s.id }}</td>
+                 <td>
+                    {% if s.image %}
+                        <img src="{{ asset('images/' ~ s.image) }}" alt="{{ s.name }}" style="width: 70px; height: auto;">
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.price }} €</td>
+                <td>{{ s.stockXS }}</td>
+                <td>{{ s.stockS }}</td>
+                <td>{{ s.stockM }}</td>
+                <td>{{ s.stockL }}</td>
+                <td>{{ s.stockXL }}</td>
+                <td>
+                    <a href="{{ path('admin_sweat_edit', {'id': s.id}) }}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{{ path('admin_sweat_delete', {'id': s.id}) }}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce sweat-shirt ?');">Delete</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">Aucun sweat-shirt trouvé</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
