@@ -8,9 +8,14 @@
 </ul>
 
 <h3>Total à payer : {{ total }} €</h3>
+
 <script src="https://js.stripe.com/v3/"></script>
 
 <div id="payment-element"></div>
+
+<a href="{{ path('cart') }}" class="btn btn-secondary" style="margin-bottom: 15px; display:inline-block;">
+     Retour au panier
+</a>
 
 <form id="payment-form">
     <button id="submit">Payer</button>
