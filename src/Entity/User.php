@@ -46,6 +46,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $verificationToken = null;
+
     /**
      * @var Collection<int, Cart>
      */
@@ -65,6 +68,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getEmail(): ?string
     {
         return $this->email;
+    }
+
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+
+    public function setVerificationToken(?string $token): self
+    {
+        $this->verificationToken = $token;
+        return $this;
     }
 
     public function setEmail(string $email): static

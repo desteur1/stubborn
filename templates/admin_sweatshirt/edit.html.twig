@@ -2,7 +2,13 @@
 
 {% block title %}Modifier Sweat-shirt{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/styles/edit.css') }}">
+{% endblock %}
+
 {% block body %}
+<div class="form-container">
 <h1>Modifier : {{ sweatshirt.name }}</h1>
 
 {{ form_start(form) }}
@@ -11,4 +17,5 @@
 {{ form_end(form) }}
 
 <a href="{{ path('app_admin_sweatshirt') }}">Retour à la liste</a>
+</div>
 {% endblock %}

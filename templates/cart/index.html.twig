@@ -3,48 +3,71 @@
 {% block title %}Mon Panier!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+{% block stylesheets %}
+    {{ parent() }}  {# Charge app.css #}
+    <link rel="stylesheet" href="{{ asset('assets/styles/cart.css') }}">
+{% endblock %}
 
-<div class="example-wrapper">  
+<div class="cart-container">  
     <h1>Mon panier</h1>
     
-
-
 {# Boucle sur les produits du panier #}
 {% for item in cart.cartItems %}
 
-<div>
-     <img src="/images/{{ item.product.image }}" width="150">
+<div class="product-card">
 
-    <p>
-        {# Nom du produit #}
-        {{ item.product.name }} ({{ item.size }}) -
+   <!-- Image -->
+    <div class="product-image">
+     <img src="/images/{{ item.product.image }}" alt="{{ item.product.name }} width="150">
+    </div>
 
-        {# Prix du produit #}
-        {{ item.product.price }} €
+    <!-- Infos du produit -->
+    <div class="product-info">
+    <div class="product-details">
+    <p class="label">Nom</p>
+    <p>{{ item.product.name }}</p>
 
-        {# Quantité #}
-        x {{ item.quantity }}
-    </p>
+    <p class="label">Prix</p>
+    <p>{{ item.product.price }} €</p>
 
-        <a href="{{ path('cart_increase', {'id': item.product.id,'size': item.size}) }}">➕</a>
-        <a href="{{ path('cart_decrease', {'id': item.product.id,'size': item.size}) }}">➖</a>
-        <a href="{{ path('cart_remove', {'id': item.product.id,'size': item.size}) }}">❌ Supprimer</a>
+    <p class="label">Taille</p>
+    <p>{{ item.size }}</p>
+
+    <p class="label">Quantité</p>
+    <p>{{ item.quantity }}</p>
 </div>
-     
+    
+
+     <!-- Boutons d’action -->
+     <div class="actions">
+        <a href="{{ path('cart_decrease', {'id': item.product.id,'size': item.size}) }}" class="btn-action">➖</a>
+        <a href="{{ path('cart_increase', {'id': item.product.id,'size': item.size}) }}" class="btn-action">➕</a>
+        <a href="{{ path('cart_remove', {'id': item.product.id,'size': item.size}) }}" class="btn-delete">Retirer du panier</a>
+    </div>
+
+ </div>
+
+</div>   
+
 {% else %}
     {# Si panier vide #}
     <p>Panier vide</p>
 {% endfor %}
+</div>
 
 {# Affichage du total #}
-<p>Total : {{ total }} €</p>
-<a href="/products">Continuer mes achats</a>
-<a href="{{ path('checkout') }}" class="btn btn-success">
-    finaliser le paiement
-</a>
+<div class="payment-sec">
+
+   <div class="payment-total">
+     <h4>Total : {{ total }} €</h4>
+   </div>
+
+   <div class="payment-button">
+    <a href="{{ path('checkout') }}" class="btn-success">finaliser le paiement</a>
+    <a href="/products" class="btn">Continuer mes achats</a>
+     
+           
+   </div> 
+
 </div>
 {% endblock %}
