@@ -2,25 +2,41 @@
 
 {% block title %} {{product.name}}{% endblock %}
 
+{% block stylesheets %}
+         {{ parent() }}  {# Charge app.css #}
+         <link rel="stylesheet" href="{{ asset('assets/styles/product-detail.css') }}">
+        {% endblock %}
+
 {% block body %}
 
 <h1>{{ product.name }}</h1>
+<div class="card-items">
+  <div class="item1">
+     <img src="/images/{{ product.image }}" alt="{{ product.name }} width="300">
+  </div>
+  <div class="item2">
+    <div class="info">
+        <h3> Nom : {{ product.name }}</h3>
+        <p> Prix : {{ product.price }} €</p>
+    </div>
+  <div class="form">
+    <form id="addToCart"  action="{{ path('cart_add', {id: product.id}) }}" method="post">
 
-<img src="/images/{{ product.image }}" width="200">
-<p>Prix : {{ product.price }} €</p>
-<form action="{{ path('cart_add', {id: product.id}) }}" method="post">
+        <label>Taille :</label>
+        <select name="size">
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+        </select>
 
-    <label>Taille :</label>
-    <select name="size">
-        <option value="XS">XS</option>
-        <option value="S">S</option>
-        <option value="M">M</option>
-        <option value="L">L</option>
-        <option value="XL">XL</option>
-    </select>
+        
+    </form>
+    <button type="submit" form="addToCart" class="add-cart">Ajouter au panier</button>
+    </div>
+  </div>
+</div>
 
-    <button type="submit">Ajouter au panier</button>
-</form>
-
-<a href="{{path('products')}}">Retour</a>
+<a href="{{path('products')}}" class="return-link">Retour</a>
 {% endblock %}

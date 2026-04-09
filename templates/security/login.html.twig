@@ -2,7 +2,14 @@
 
 {% block title %}Log in!{% endblock %}
 
+    {% block stylesheets %}
+         {{ parent() }}  {# Charge app.css #}
+         <link rel="stylesheet" href="{{ asset('assets/styles/login.css') }}">
+    {% endblock %}
+
 {% block body %}
+<div class="card-container">
+<div class="card-items">
 <form method="post">
     {% if error %}
         <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
@@ -15,10 +22,13 @@
     {% endif %}
 
     <h1 class="h3 mb-3 font-weight-normal">Se Connecter</h1>
+    <hr class="custom-hr">
     <label for="inputName">Nom utilisateur</label>
-    <input type="text" value="{{ last_username }}" name="email" id="inputName" class="form-control"  required autofocus>
+    <input type="text" value="{{ last_username }}" name="_username" id="inputName" class="form-control" autocomplete="username"  required autofocus>
+
     <label for="inputPassword">Password</label>
     <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+    
     <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 
     <div class="checkbox mb-3">
@@ -27,16 +37,19 @@
         </label>
     </div>
 
-    <button class="btn btn-lg btn-primary" type="submit">
+    <button class="btn btn-lg btn-primary " type="submit">
         Se Connecter
     </button>
 </form>
-<p>
-  <a href='#'> Mot de passe oublié ?</a>
+<p class="forget">
+  <a href='#' onclick="return false;"> Mot de passe oublié ?</a>
 </p>
+<hr class="custom-hr">
 
-<p>
+<p class="connect">
    Pas encore inscrit ?
    <a href='{{path('app_register')}}'>Créer un compte</a>
 </p>
+</div>
+</div>
 {% endblock %}

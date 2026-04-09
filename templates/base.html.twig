@@ -6,51 +6,69 @@
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
+         <link rel="stylesheet" href="{{ asset('assets/styles/app.css') }}">
         {% endblock %}
 
         {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
-        
+
+    
     </head>
-   
+        
     <body>
         
-        <nav>
-            <a href="{{ path('home') }}">
-            <img src="/images/logo.png" width="75">
-            </a>
-            <a href="{{ path('home') }}">Accueil</a>
-            
+        <nav class="navbar">
 
-            {% if app.user %}
-    <span class="greeting">{{ "now"|date("H") < 18 ? "Bonjour" : "Bonsoir" }} {{ app.user.name }}</span>
-    <a href="{{ path('products') }}">Boutique</a>
+                <div class="navbar-left">
+                    <a href="{{ path('home') }}" class="logo">
+                        <img src="{{ asset('images/logo.png') }}" width="75">
+                    </a>
+                    <span class="slogan">Don't compromise on your look</span>
 
-    {# Récupérer le panier depuis l'utilisateur #}
-    {% set cart = app.user.getCurrentCart() %}
-    {% if cart %}
-        {# Nombre de produits différents dans le panier #}
-        {% set count = cart.cartItems|length %}
-    {% else %}
-        {% set count = 0 %}
-    {% endif %}
+                 {% if app.user %}
+                    <span class="greeting">{{ "now"|date("H", "Europe/Paris") < 18 ? "Bonjour" : "Bonsoir" }} {{ app.user.name }}</span>
+                {% endif %}
+                 
+                 <!--  Icône burger -->
+                 <div class="burger" id="burger">☰</div>
 
-    <a href="{{ path('cart') }}">Panier ({{ count }})</a>
-    <a href="{{ path('app_logout') }}">Déconnexion</a>
-{% else %}
-    <a href="{{ path('app_login') }}">Connexion</a>
-    <a href="{{ path('app_register') }}">Inscription</a>
-{% endif %}
+                </div>
+
+                <div class="navbar-right" id="menu">
+                    <a href="{{ path('home') }}">Accueil</a>
+
+                    {% if app.user %}
+                        
+                        <a href="{{ path('products') }}">Boutique</a>
+
+                        {% set cart = app.user.getCurrentCart() %}
+                        <a href="{{ path('cart') }}">Panier ({{ cart ? cart.cartItems|length : 0 }})</a>
+                        <a href="{{ path('app_logout') }}">Déconnexion</a>
+
+                    {% else %}
+                        <a href="{{ path('app_login') }}">Connexion</a>
+                        <a href="{{ path('app_register') }}">Inscription</a>
+                    {% endif %}
+                </div>
+
         </nav>
+
+        {# Bloc d'affichage des alertes globales #}
+        <div class="flash-container" id="flash-container">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
         
          {% block body %}{% endblock %}
 
-        <footer style="margin-top: 50px; padding: 20px; background: #eee; text-align: start;">
+        <footer>
     
                 <p><strong>Stubborn</strong></p>
-
-                <p>Don't compromise on your look</p>
 
                 <p>Email : contact@stubborn.com</p>
 
@@ -59,6 +77,24 @@
                 <p>© {{ "now"|date("Y") }} Stubborn - Tous droits réservés</p>
 
         </footer>
+
+        <script>
+        const burger = document.getElementById('burger');
+        const menu = document.getElementById('menu');
+
+        burger.addEventListener('click', () => {
+            menu.classList.toggle('active');
+        });
+
+        // Supprime le message au bout de 10 secondes
+        setTimeout(() => {
+            const flash = document.getElementById('flash-container');
+            if(flash) {
+                flash.style.display = 'none';
+            }
+        }, 10000); // 10000ms = 10 secondes
+
+   </script>
         
         
     </body>
