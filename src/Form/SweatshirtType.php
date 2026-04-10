@@ -34,6 +34,7 @@ class SweatshirtType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Sweatshirt::class,
+            
         ]);
     }
 }
