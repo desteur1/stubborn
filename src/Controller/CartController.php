@@ -87,7 +87,7 @@ public function add($id, Request $request, SweatshirtRepository $repo): Response
     $user = $this->getUser();
     if (!$user instanceof User) {
         $this->addFlash('error', 'Vous devez être connecté pour ajouter un produit.');
-        return $this->redirectToRoute('login');
+        return $this->redirectToRoute('app_login');
     }
 
     $cart = $this->getUserCart(); // panier persistant
@@ -132,7 +132,7 @@ public function add($id, Request $request, SweatshirtRepository $repo): Response
 public function increase($id, $size, SweatshirtRepository $repo): Response
 {
     $cart = $this->getUserCart(); // panier persistant
-    if (!$cart) return $this->redirectToRoute('login');// si pas connecté
+    if (!$cart) return $this->redirectToRoute('app_login');// si pas connecté
 
     $item = $this->em->getRepository(CartItem::class)->findOneBy([ // on cherche l'item correspondant au produit et à la taille dans le panier de l'utilisateur
         'cart' => $cart,
@@ -153,7 +153,7 @@ public function increase($id, $size, SweatshirtRepository $repo): Response
 public function decrease($id, $size, SweatshirtRepository $repo): Response
 {
     $cart = $this->getUserCart();
-    if (!$cart) return $this->redirectToRoute('login');
+    if (!$cart) return $this->redirectToRoute('app_login');
 
     $item = $this->em->getRepository(CartItem::class)->findOneBy([
         'cart' => $cart,
@@ -181,7 +181,7 @@ public function decrease($id, $size, SweatshirtRepository $repo): Response
 public function remove($id, $size, SweatshirtRepository $repo): Response
 {
     $cart = $this->getUserCart();
-    if (!$cart) return $this->redirectToRoute('login');
+    if (!$cart) return $this->redirectToRoute('app_login');
 
     $item = $this->em->getRepository(CartItem::class)->findOneBy([
         'cart' => $cart,
@@ -203,7 +203,7 @@ public function remove($id, $size, SweatshirtRepository $repo): Response
 public function success(): Response
 {
     $cart = $this->getUserCart();
-    if (!$cart) return $this->redirectToRoute('login');
+    if (!$cart) return $this->redirectToRoute('app_login');
 
     $cartItems = $cart->getCartItems()->toArray();
     $total = 0;

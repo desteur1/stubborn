@@ -9,13 +9,28 @@
 
 {% block body %}
 <div class="form-container">
-<h1>Ajouter un Sweat-shirt</h1>
+    <h1>Ajouter un Sweat-shirt</h1>
 
-{{ form_start(form, { 'attr': { 'enctype': 'multipart/form-data' } }) }}
-{{ form_widget(form) }}
-<button class="btn btn-success">Enregistrer</button>
-{{ form_end(form) }}
+    {{ form_start(form, { attr: { enctype: 'multipart/form-data' } }) }}
 
-<a href="{{ path('app_admin_sweatshirt') }}">Retour à la liste</a>
+        <div class="form-fields">
+            {{ form_row(form.name) }}
+            {{ form_row(form.price) }}
+            {{ form_row(form.featured) }}
+            {{ form_row(form.stockXS) }}
+            {{ form_row(form.stockS) }}
+            {{ form_row(form.stockM) }}
+            {{ form_row(form.stockL) }}
+            {{ form_row(form.stockXL) }}
+            {{ form_row(form.imageFile) }}
+        </div>
+
+        {{ form_rest(form) }}
+
+        <button class="btn btn-success">Enregistrer</button>
+
+    {{ form_end(form) }}
+
+    <a href="{{ path('app_admin_sweatshirt') }}">Retour à la liste</a>
 </div>
 {% endblock %}

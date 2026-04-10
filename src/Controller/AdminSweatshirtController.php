@@ -34,7 +34,9 @@ final class AdminSweatshirtController extends AbstractController
          $imageFile = $form->get('imageFile')->getData();// Récupérer le fichier uploadé
             if ($imageFile) {
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension(); // Générer un nom de fichier unique
+
                 $imageFile->move($this->getParameter('images_directory'), $newFilename); // Enregistrer le nom du fichier dans l'entité
+                
                 $sweat->setImage($newFilename);
             }
             
